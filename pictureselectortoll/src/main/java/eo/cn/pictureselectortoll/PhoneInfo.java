@@ -26,6 +26,7 @@ public class PhoneInfo {
             View rootView = ((ViewGroup) (decorViewGroup.findViewById(android.R.id.content))).getChildAt(0);
             //预留状态栏位置
             rootView.setFitsSystemWindows(true);
+
             //添加状态栏高度的视图布局，并填充颜色
             View statusBarTintView = new View(activity);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,

@@ -5,4 +5,10 @@
     <style name="ImageSelectorTheme" parent="BaseTheme" />
 
     <style name="ImageShowTheme" parent="android:Theme.NoTitleBar.Fullscreen"></style>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
 </resources>

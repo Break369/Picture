@@ -329,7 +329,6 @@ public class ImageSelectorFragment extends Fragment {
                         Toast.makeText(context, R.string.msg_amount_limit, Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     resultList.add(image.path);
                     if (callback != null) {
                         callback.onImageSelected(image.path);

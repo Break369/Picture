@@ -125,10 +125,10 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
         cropImagePath = file.getAbsolutePath();
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        //intent.setDataAndType(Uri.fromFile(new File(imagePath)), "image/*");
-        Uri uri = FileProvider.getUriForFile(this,
+        intent.setDataAndType(Uri.fromFile(new File(imagePath)), "image/*");
+        /*Uri uri = FileProvider.getUriForFile(this,
                 "eo.cn.pictureselectortoll.fileprovider", new File(imagePath));//通过FileProvider创建一个content类型的Uri
-        intent.setDataAndType(uri,"image");
+        intent.setDataAndType(uri,"image");*/
         intent.putExtra("crop", "true");
         intent.putExtra("aspectX", aspectX);
         intent.putExtra("aspectY", aspectY);

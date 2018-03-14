@@ -7,22 +7,22 @@
 废话不多说！上教程！贴代码！具体的在使用中体验
 ---------------------------
 * 第一步！都一样！接入类库！*
-*  1、在项目的gradle中加入代码
+ *  1、在项目的gradle中加入代码
 ```java
 repositories {
         jcenter()
         maven { url 'https://jitpack.io' }
     }
 ```
-*  2、在app的gradle下加入代码，接入我的类库
+ *  2、在app的gradle下加入代码，接入我的类库
 ```java
 compile 'com.github.Break369:Picture:v1.2'
 ```
-*  3、在这里我使用的是glide图片加载框架！所以我就在app的gradle下面也加了
+ *  3、在这里我使用的是glide图片加载框架！所以我就在app的gradle下面也加了
 ```java
 compile 'com.github.bumptech.glide:glide:3.6.1'
 ```
-*  当然！这网路加载框架！可以根据自己的爱好进行选择！对使用没有影响！只要在加载的时候修改就ok
+ *  当然！这网路加载框架！可以根据自己的爱好进行选择！对使用没有影响！只要在加载的时候修改就ok
 
 * 第二步，在定义xml文件，设置图片选择后显示的容器
 ```java

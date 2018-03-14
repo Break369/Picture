@@ -24,7 +24,8 @@ compile 'com.github.Break369:Picture:v1.2'
 ```java
 compile 'com.github.bumptech.glide:glide:3.6.1'
 ```
- *  当然！这网路加载框架！可以根据自己的爱好进行选择！对使用没有影响！只要在加载的时候修改就ok
+* 
+ 	* 当然！这网路加载框架！可以根据自己的爱好进行选择！对使用没有影响！只要在加载的时候修改就ok
 
 * 第二步，在定义xml文件，设置图片选择后显示的容器
 ```java

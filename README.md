@@ -14,10 +14,12 @@ repositories {
         maven { url 'https://jitpack.io' }
     }
 ```
+* 
 	* 2、在app的gradle下加入代码，接入我的类库
 ```java
 compile 'com.github.Break369:Picture:v1.2'
 ```
+* 
 	* 3、在这里我使用的是glide图片加载框架！所以我就在app的gradle下面也加了
 ```java
 compile 'com.github.bumptech.glide:glide:3.6.1'

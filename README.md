@@ -8,24 +8,24 @@
 ---------------------------
 *第一步！都一样！接入类库！*
 1、在项目的gradle中加入代码
---java
+```java
 repositories {
         jcenter()
         maven { url 'https://jitpack.io' }
     }
----
+```
 2、在app的gradle下加入代码，接入我的类库
----java
+```java
 compile 'com.github.Break369:Picture:v1.2'
------
+```
 3、在这里我使用的是glide图片加载框架！所以我就在app的gradle下面也加了
---java
+```java
 compile 'com.github.bumptech.glide:glide:3.6.1'
----
+```
 当然！这网路加载框架！可以根据自己的爱好进行选择！对使用没有影响！只要在加载的时候修改就ok
 
 *第二步，在定义xml文件，设置图片选择后显示的容器
----java
+```java
 <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,10 +46,10 @@ compile 'com.github.bumptech.glide:glide:3.6.1'
             android:layout_marginTop="5dp"
             android:src="@drawable/test_img_wall_first" />-->
     </LinearLayout>
-    ------
+ ```
    *第二步，定义图片加载，这个和你选择的图片加载器有关*
    在代码中创建一个java类：GlideLoader实现ImageLoader接口
-   ---java
+   ```java
    public class GlideLoader implements ImageLoader {
 
 	@Override
@@ -62,10 +62,10 @@ compile 'com.github.bumptech.glide:glide:3.6.1'
     }
 
 }
-----
+```
 *第四步，初始化选择器的参数*
 在代码中
----java
+```java
 private void initImageConfig() {
         mImageConfig = new ImageConfig.Builder(
                 new GlideLoader())
@@ -87,11 +87,11 @@ private void initImageConfig() {
                 .showCamera()
                 .build();
     }
- ----
+```
  *第五步，选择器的启动
- ---java
+ ```java
   ImageSelector.open(ActivityGWDT.this, mImageConfig);
-  ---
+  ```
   *嗯！以上的就是这个选择器的使用！超级简单！在性能上还行！可以进行预览，根据需求快速反选等等操作，详细浏览等等操作
    
 

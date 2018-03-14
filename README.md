@@ -95,7 +95,7 @@ private void initImageConfig() {
  ```java
   ImageSelector.open(ActivityGWDT.this, mImageConfig);
   ```
-  * 嗯！以上的就是这个选择器的使用！超级简单！在性能上还行！可以进行预览，根据需求快速反选等等操作，详细浏览等等操作
+   * 嗯！以上的就是这个选择器的使用！超级简单！在性能上还行！可以进行预览，根据需求快速反选等等操作，详细浏览等等操作
    
 
 

@@ -52,7 +52,7 @@ compile 'com.github.bumptech.glide:glide:3.6.1'
  ```
 * 第二步，定义图片加载，这个和你选择的图片加载器有关*
    在代码中创建一个java类：GlideLoader实现ImageLoader接口
-   ```java
+```java
    public class GlideLoader implements ImageLoader {
 
 	@Override
@@ -62,9 +62,9 @@ compile 'com.github.bumptech.glide:glide:3.6.1'
                 .placeholder(R.drawable.global_img_default)
                 .centerCrop()
                 .into(imageView);
-    }
+     }
 
-}
+   }
 ```
 * 第四步，初始化选择器的参数*
 在代码中

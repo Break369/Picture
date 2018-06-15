@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -37,6 +38,7 @@ import java.util.List;
 import eo.cn.pictureselectortoll.utils.FileUtils;
 import eo.cn.pictureselectortoll.utils.MPermissionUtils;
 import eo.cn.pictureselectortoll.utils.TimeUtils;
+import eo.cn.pictureselectortoll.utils.Utils;
 
 
 public class ImageSelectorFragment extends Fragment {
@@ -324,8 +326,12 @@ public class ImageSelectorFragment extends Fragment {
     private void showCameraAction() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-            tempFile = FileUtils.createTmpFile(getActivity(), imageConfig.getFilePath());
-            Uri outputUri = null;
+            if (Utils.existSDCard()) {
+                tempFile = new File(Environment.getExternalStorageDirectory() + imageConfig.getFilePath(), Utils.getImageName());
+            } else {
+                tempFile = new File(getContext().getCacheDir(), Utils.getImageName());
+            }
+            Uri outputUri;
             //cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             //添加这一句表示对目标应用临时授权该Uri所代表的文件
             /*cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(getActivity(),
@@ -339,9 +345,6 @@ public class ImageSelectorFragment extends Fragment {
                 contentValues.put(MediaStore.Images.Media.DATA, tempFile.getAbsolutePath());
                 outputUri = context.getContentResolver()
                         .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-                //outputUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "/temp/"+System.currentTimeMillis() + ".jpg"));
-                //TODO:裁剪整个流程，估计授权一次就好outputUri不需要ContentUri,否则失败
-                //outputUri = FileProvider.getUriForFile(activity, "com.bao.cropimage.fileprovider", new File(crop_image));
             } else
             {
                 outputUri = Uri.fromFile(tempFile);
@@ -358,7 +361,6 @@ public class ImageSelectorFragment extends Fragment {
         MPermissionUtils.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
     private void selectImageFromGrid(Image image, boolean isMulti) {
         if (image != null) {
             if (isMulti) {

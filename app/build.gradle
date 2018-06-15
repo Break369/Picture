@@ -28,6 +28,11 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     //testImplementation 'junit:junit:4.12'
-    api project(':pictureselectortoll')
+    //api project(':pictureselectortoll')
     api 'com.github.bumptech.glide:glide:3.6.1'
+    implementation 'com.github.Break369:Picture:v1.4'
+
+}
+repositories {
+    maven { url 'https://jitpack.io' }
 }

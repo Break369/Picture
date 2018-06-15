@@ -338,11 +338,15 @@ public class ImageSelectorFragment extends Fragment {
                     "eo.cn.pictureselectortoll.fileprovider", tempFile));*/
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             {
-                //TODO:访问相册需要被限制，需要通过FileProvider创建一个content类型的Uri
+                cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                /*//TODO:访问相册需要被限制，需要通过FileProvider创建一个content类型的Uri
                 ContentValues contentValues = new ContentValues(1);
                 contentValues.put(MediaStore.Images.Media.DATA, tempFile.getAbsolutePath());
                 outputUri = context.getContentResolver()
-                        .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+                        .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);*/
+                outputUri =  FileProvider.getUriForFile(getActivity(),
+                        context.getPackageName()+".fileprovider", tempFile);
             } else
             {
                 outputUri = Uri.fromFile(tempFile);

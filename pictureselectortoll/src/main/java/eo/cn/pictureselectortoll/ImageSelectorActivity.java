@@ -1,11 +1,13 @@
 package eo.cn.pictureselectortoll;
 
 
+import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.FileProvider;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.util.ArrayList;
 
+import eo.cn.pictureselectortoll.utils.MPermissionUtils;
 import eo.cn.pictureselectortoll.utils.Utils;
 
 public class ImageSelectorActivity extends FragmentActivity implements ImageSelectorFragment.Callback {
@@ -114,14 +117,13 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
     private String cropImagePath;
 
     private void crop(String imagePath, int aspectX, int aspectY, int outputX, int outputY) {
+
         File file;
         if (Utils.existSDCard()) {
             file = new File(Environment.getExternalStorageDirectory() + imageConfig.getFilePath(), Utils.getImageName());
         } else {
             file = new File(getCacheDir(), Utils.getImageName());
         }
-
-
         cropImagePath = file.getAbsolutePath();
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -147,13 +149,33 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
     }
 
     @Override
-    public void onSingleImageSelected(String path) {
+    public void onSingleImageSelected(final String path) {
         if (imageConfig.isCrop()) {
-            crop(path, imageConfig.getAspectX(), imageConfig.getAspectY(), imageConfig.getOutputX(), imageConfig.getOutputY());
+            MPermissionUtils.requestPermissionsResult(this, 4,
+                    new String[]{Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE}
+                    , new MPermissionUtils.OnPermissionListener() {
+                        @Override
+                        public void onPermissionGranted() {
+                            crop(path, imageConfig.getAspectX(), imageConfig.getAspectY(), imageConfig.getOutputX(), imageConfig.getOutputY());
+                            //  Toast.makeText(MainActivity.this, "授权成功,执行拨打电话操作!", Toast.LENGTH_SHORT).show();
+                        }
+                        @Override
+                        public void onPermissionDenied() {
+                            MPermissionUtils.showTipsDialog(ImageSelectorActivity.this);
+                        }
+                    });
         } else {
             pathList.add(path);
             SelectedFinish();
         }
+    }
+    //6.0权限
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        MPermissionUtils.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -184,10 +206,23 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
     }
 
     @Override
-    public void onCameraShot(File imageFile) {
+    public void onCameraShot(final File imageFile) {
         if (imageFile != null) {
             if (imageConfig.isCrop()) {
-                crop(imageFile.getAbsolutePath(), imageConfig.getAspectX(), imageConfig.getAspectY(), imageConfig.getOutputX(), imageConfig.getOutputY());
+                MPermissionUtils.requestPermissionsResult(this, 4,
+                        new String[]{Manifest.permission.CAMERA,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE}
+                        , new MPermissionUtils.OnPermissionListener() {
+                            @Override
+                            public void onPermissionGranted() {
+                                crop(imageFile.getAbsolutePath(), imageConfig.getAspectX(), imageConfig.getAspectY(), imageConfig.getOutputX(), imageConfig.getOutputY());
+                            }
+                            @Override
+                            public void onPermissionDenied() {
+                                MPermissionUtils.showTipsDialog(ImageSelectorActivity.this);
+                            }
+                        });
             } else {
                 pathList.add(imageFile.getAbsolutePath());
                 SelectedFinish();

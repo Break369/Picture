@@ -109,8 +109,19 @@ public class ImageSelectorFragment extends Fragment {
         popupAnchorView = view.findViewById(R.id.footer_layout);
 
         time_text.setVisibility(View.GONE);
-
-        init();
+        MPermissionUtils.requestPermissionsResult(getActivity(), 4,
+                new String[]{Manifest.permission.CAMERA}
+                , new MPermissionUtils.OnPermissionListener() {
+                    @Override
+                    public void onPermissionGranted() {
+                        init();
+                        //  Toast.makeText(MainActivity.this, "授权成功,执行拨打电话操作!", Toast.LENGTH_SHORT).show();
+                    }
+                    @Override
+                    public void onPermissionDenied() {
+                        MPermissionUtils.showTipsDialog(getContext());
+                    }
+                });
     }
 
     private void init() {
@@ -363,6 +374,7 @@ public class ImageSelectorFragment extends Fragment {
         MPermissionUtils.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
     private void selectImageFromGrid(Image image, boolean isMulti) {
         if (image != null) {
             if (isMulti) {
@@ -469,14 +481,17 @@ public class ImageSelectorFragment extends Fragment {
 
                     imageList.clear();
                     imageList.addAll(tempImageList);
-                    imageAdapter.notifyDataSetChanged();
+                    if (imageAdapter!=null){
+                        imageAdapter.notifyDataSetChanged();
+                    }
 
                     if (resultList != null && resultList.size() > 0) {
                         imageAdapter.setDefaultSelected(resultList);
                     }
 
-                    folderAdapter.setData(folderList);
-
+                    if (folderAdapter!=null){
+                        folderAdapter.setData(folderList);
+                    }
                     hasFolderGened = true;
 
                 }

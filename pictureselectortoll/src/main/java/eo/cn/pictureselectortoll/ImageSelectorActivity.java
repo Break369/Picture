@@ -2,8 +2,10 @@ package eo.cn.pictureselectortoll;
 
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -126,8 +128,22 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
         }
         cropImagePath = file.getAbsolutePath();
         Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.setDataAndType(Uri.fromFile(new File(imagePath)), "image/*");
+        Uri outputUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        {
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            //TODO:访问相册需要被限制，需要通过FileProvider创建一个content类型的Uri
+            ContentValues contentValues = new ContentValues(1);
+            contentValues.put(MediaStore.Images.Media.DATA,file.getAbsolutePath());
+            outputUri = this.getContentResolver()
+                    .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+            //TODO:裁剪整个流程，估计授权一次就好outputUri不需要ContentUri,否则失败
+        } else
+        {
+            outputUri = Uri.fromFile(file);
+        }
         /*Uri uri = FileProvider.getUriForFile(this,
                 "eo.cn.pictureselectortoll.fileprovider", new File(imagePath));//通过FileProvider创建一个content类型的Uri
         intent.setDataAndType(uri,"image");*/
@@ -137,8 +153,7 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
         intent.putExtra("outputX", outputX);
         intent.putExtra("outputY", outputY);
         intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(ImageSelectorActivity.this,
-                "eo.cn.pictureselectortoll.fileprovider", file));
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
         startActivityForResult(intent, ImageSelector.IMAGE_CROP_CODE);
     }
 

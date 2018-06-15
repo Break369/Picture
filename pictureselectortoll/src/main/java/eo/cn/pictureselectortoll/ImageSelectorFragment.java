@@ -1,15 +1,19 @@
 package eo.cn.pictureselectortoll;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -31,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eo.cn.pictureselectortoll.utils.FileUtils;
+import eo.cn.pictureselectortoll.utils.MPermissionUtils;
 import eo.cn.pictureselectortoll.utils.TimeUtils;
 
 
@@ -192,7 +197,21 @@ public class ImageSelectorFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (imageAdapter.isShowCamera()) {
                     if (i == 0) {
-                        showCameraAction();
+                        MPermissionUtils.requestPermissionsResult(getActivity(), 4,
+                                new String[]{Manifest.permission.CAMERA,
+                                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                        Manifest.permission.READ_EXTERNAL_STORAGE}
+                                , new MPermissionUtils.OnPermissionListener() {
+                                    @Override
+                                    public void onPermissionGranted() {
+                                        showCameraAction();
+                                        //  Toast.makeText(MainActivity.this, "授权成功,执行拨打电话操作!", Toast.LENGTH_SHORT).show();
+                                    }
+                                    @Override
+                                    public void onPermissionDenied() {
+                                        MPermissionUtils.showTipsDialog(getContext());
+                                    }
+                                });
                     } else {
                         Image image = (Image) adapterView.getAdapter().getItem(i);
                         selectImageFromGrid(image, imageConfig.isMutiSelect());
@@ -306,14 +325,38 @@ public class ImageSelectorFragment extends Fragment {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             tempFile = FileUtils.createTmpFile(getActivity(), imageConfig.getFilePath());
-            cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri outputUri = null;
+            //cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             //添加这一句表示对目标应用临时授权该Uri所代表的文件
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(getActivity(),
-                    "eo.cn.pictureselectortoll.fileprovider", tempFile));
+            /*cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(getActivity(),
+                    "eo.cn.pictureselectortoll.fileprovider", tempFile));*/
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            {
+                //添加这一句表示对目标应用临时授权该Uri所代表的文件
+                cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                //TODO:访问相册需要被限制，需要通过FileProvider创建一个content类型的Uri
+                ContentValues contentValues = new ContentValues(1);
+                contentValues.put(MediaStore.Images.Media.DATA, tempFile.getAbsolutePath());
+                outputUri = context.getContentResolver()
+                        .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+                //outputUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "/temp/"+System.currentTimeMillis() + ".jpg"));
+                //TODO:裁剪整个流程，估计授权一次就好outputUri不需要ContentUri,否则失败
+                //outputUri = FileProvider.getUriForFile(activity, "com.bao.cropimage.fileprovider", new File(crop_image));
+            } else
+            {
+                outputUri = Uri.fromFile(tempFile);
+            }
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
             startActivityForResult(cameraIntent, REQUEST_CAMERA);
         } else {
             Toast.makeText(context, R.string.msg_no_camera, Toast.LENGTH_SHORT).show();
         }
+    }
+    //6.0权限
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        MPermissionUtils.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void selectImageFromGrid(Image image, boolean isMulti) {
@@ -444,13 +487,9 @@ public class ImageSelectorFragment extends Fragment {
 
     public interface Callback {
         void onSingleImageSelected(String path);
-
         void onImageSelected(String path);
-
         void onImageUnselected(String path);
-
         void onCameraShot(File imageFile);
-        
         void onChangeAlbum(String albumName);
     }
 

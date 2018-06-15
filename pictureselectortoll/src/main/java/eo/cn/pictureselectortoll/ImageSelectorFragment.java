@@ -338,8 +338,6 @@ public class ImageSelectorFragment extends Fragment {
                     "eo.cn.pictureselectortoll.fileprovider", tempFile));*/
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             {
-                //添加这一句表示对目标应用临时授权该Uri所代表的文件
-                cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 //TODO:访问相册需要被限制，需要通过FileProvider创建一个content类型的Uri
                 ContentValues contentValues = new ContentValues(1);
                 contentValues.put(MediaStore.Images.Media.DATA, tempFile.getAbsolutePath());

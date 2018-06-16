@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
                         // 开启单选   （默认为多选）
                         .singleSelect()
                         // 裁剪 (只有单选可裁剪)
-                        //.crop()
+                        .crop()
                         // 开启拍照功能 （默认关闭）
                         .showCamera()
                         //设置显示容器

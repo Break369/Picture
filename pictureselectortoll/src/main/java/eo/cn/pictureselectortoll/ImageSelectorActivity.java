@@ -4,6 +4,7 @@ package eo.cn.pictureselectortoll;
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,15 +14,18 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import eo.cn.pictureselectortoll.utils.MPermissionUtils;
+import eo.cn.pictureselectortoll.utils.PhotoUtils;
 import eo.cn.pictureselectortoll.utils.Utils;
 
 public class ImageSelectorActivity extends FragmentActivity implements ImageSelectorFragment.Callback {
@@ -42,30 +46,6 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.imageselector_activity);
-
-        imageConfig = ImageSelector.getImageConfig();
-
-        Utils.hideTitleBar(this, R.id.imageselector_activity_layout, imageConfig.getSteepToolBarColor());
-
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.image_grid, Fragment.instantiate(this, ImageSelectorFragment.class.getName(), null))
-                .commit();
-
-        submitButton = (TextView) super.findViewById(R.id.title_right);
-        title_text = (TextView) super.findViewById(R.id.title_text);
-        imageselector_title_bar_layout = (RelativeLayout) super.findViewById(R.id.imageselector_title_bar_layout);
-
-        init();
-
-    }
-
-    private void init() {
-        title_text.setTextColor(imageConfig.getTitleTextColor());
-        imageselector_title_bar_layout.setBackgroundColor(imageConfig.getTitleBgColor());
-
-        pathList = imageConfig.getPathList();
-
-
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -73,6 +53,37 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
                 finish();
             }
         });
+        MPermissionUtils.requestPermissionsResult(this, 4,
+                new String[]{
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE}
+                , new MPermissionUtils.OnPermissionListener() {
+                    @Override
+                    public void onPermissionGranted() {
+                        imageConfig = ImageSelector.getImageConfig();
+                        Utils.hideTitleBar(ImageSelectorActivity.this, R.id.imageselector_activity_layout, imageConfig.getSteepToolBarColor());
+                        getSupportFragmentManager().beginTransaction()
+                                .add(R.id.image_grid, Fragment.instantiate(ImageSelectorActivity.this, ImageSelectorFragment.class.getName(), null))
+                                .commit();
+                        submitButton = (TextView) findViewById(R.id.title_right);
+                        title_text = (TextView) findViewById(R.id.title_text);
+                        imageselector_title_bar_layout = (RelativeLayout) findViewById(R.id.imageselector_title_bar_layout);
+
+                        init();
+                        //  Toast.makeText(MainActivity.this, "授权成功,执行拨打电话操作!", Toast.LENGTH_SHORT).show();
+                    }
+                    @Override
+                    public void onPermissionDenied() {
+                        MPermissionUtils.showTipsDialog(ImageSelectorActivity.this);
+                    }
+                });
+    }
+
+    private void init() {
+        title_text.setTextColor(imageConfig.getTitleTextColor());
+        imageselector_title_bar_layout.setBackgroundColor(imageConfig.getTitleBgColor());
+
+        pathList = imageConfig.getPathList();
 
 
         if (pathList == null || pathList.size() <= 0) {
@@ -98,7 +109,14 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //裁剪返回
         if (requestCode == ImageSelector.IMAGE_CROP_CODE && resultCode == RESULT_OK) {
-            pathList.add(cropImagePath);
+            String imgPath = "";
+            try{
+                imgPath = PhotoUtils.getPath(this, outputUri);
+            }catch (Exception e){
+                Log.e("错误",e.getMessage());
+            }
+            Log.e("输出裁剪",imgPath);
+            pathList.add(imgPath);
             SelectedFinish();
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -116,44 +134,70 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
         finish();
     }
 
+    //创建file
+    public String createFile(long time) {
+        String fileName = "";
+        if (fileName.equals("")) {
+            if (Environment.getExternalStorageState()
+                    .equals(Environment.MEDIA_MOUNTED)) {
+                String path = Environment.getExternalStorageDirectory() + File.separator + "ED_Allince" + File.separator;
+                File file = new File(path);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                fileName = path + String.valueOf(time) + ".jpg";
+                tempFile = new File(fileName);
+            } else {
+                Toast.makeText(this,"不存在sd卡",Toast.LENGTH_SHORT).show();
+            }
+        }
+        return fileName;
+    }
+    private File tempFile;
     private String cropImagePath;
-
+    private Uri outputUri;
     private void crop(String imagePath, int aspectX, int aspectY, int outputX, int outputY) {
 
-        File file;
-        if (Utils.existSDCard()) {
-            file = new File(Environment.getExternalStorageDirectory() + imageConfig.getFilePath(), Utils.getImageName());
-        } else {
-            file = new File(getCacheDir(), Utils.getImageName());
-        }
-        cropImagePath = file.getAbsolutePath();
+        cropImagePath = Environment.getExternalStorageDirectory()+ "/temp/"+System.currentTimeMillis() + ".jpg";
+        createFile(System.currentTimeMillis());
         Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(Uri.fromFile(new File(imagePath)), "image/*");
-        Uri outputUri;
+        Uri imageUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         {
             //添加这一句表示对目标应用临时授权该Uri所代表的文件
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             //TODO:访问相册需要被限制，需要通过FileProvider创建一个content类型的Uri
+            imageUri = FileProvider.getUriForFile(this,
+                    this.getPackageName()+".fileprovider", new File(imagePath));
             ContentValues contentValues = new ContentValues(1);
-            contentValues.put(MediaStore.Images.Media.DATA,file.getAbsolutePath());
-            outputUri = this.getContentResolver()
+            contentValues.put(MediaStore.Images.Media.DATA,tempFile.getAbsolutePath());
+            outputUri = getContentResolver()
                     .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-            //TODO:裁剪整个流程，估计授权一次就好outputUri不需要ContentUri,否则失败
+            /*outputUri = FileProvider.getUriForFile(this,
+                    "eo.cn.pictureselectortoll.fileprovider", tempFile);*/
+            //outputUri = Uri.fromFile(file);
         } else
         {
-            outputUri = Uri.fromFile(file);
+            imageUri = Uri.fromFile(new File(imagePath));
+            outputUri = Uri.fromFile(tempFile);
         }
         /*Uri uri = FileProvider.getUriForFile(this,
                 "eo.cn.pictureselectortoll.fileprovider", new File(imagePath));//通过FileProvider创建一个content类型的Uri
         intent.setDataAndType(uri,"image");*/
+        intent.setDataAndType(imageUri, "image/*");
         intent.putExtra("crop", "true");
         intent.putExtra("aspectX", aspectX);
         intent.putExtra("aspectY", aspectY);
         intent.putExtra("outputX", outputX);
         intent.putExtra("outputY", outputY);
+        intent.putExtra("scale", true);
         intent.putExtra("return-data", false);
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+        //添加临时权限标记
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        Log.e("错误",outputUri.getPath());
         startActivityForResult(intent, ImageSelector.IMAGE_CROP_CODE);
     }
 

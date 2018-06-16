@@ -1,6 +1,7 @@
 package eo.cn.pictureselectortoll;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,8 +80,11 @@ public class FolderAdapter extends BaseAdapter {
                 Folder folder = getItem(position);
                 holder.folder_name_text.setText(folder.name);
                 holder.image_num_text.setText("" + folder.images.size() + (context.getResources().getText(R.string.sheet)));
-
-                imageConfig.getImageLoader().displayImage(context, folder.cover.path, holder.folder_image);
+                try {
+                    imageConfig.getImageLoader().displayImage(context, folder.cover.path, holder.folder_image);
+                }catch (Exception e){
+                    Log.e("错误",e.getMessage());
+                }
             }
 
             if (lastSelected == position) {

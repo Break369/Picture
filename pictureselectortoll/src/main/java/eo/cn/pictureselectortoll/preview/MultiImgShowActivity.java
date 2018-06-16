@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -22,7 +23,7 @@ import java.util.Map;
 import eo.cn.pictureselectortoll.ImageLoader;
 import eo.cn.pictureselectortoll.R;
 
-public class MultiImgShowActivity extends Activity implements ZoomImageView.OnIsSingleListener {
+public class MultiImgShowActivity extends AppCompatActivity implements ZoomImageView.OnIsSingleListener {
     private ViewPager viewPager;
     private List<String> imgList;
     private ZoomImageView[] mImageView;

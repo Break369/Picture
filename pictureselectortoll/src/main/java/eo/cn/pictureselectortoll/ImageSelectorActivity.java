@@ -78,7 +78,6 @@ public class ImageSelectorActivity extends FragmentActivity implements ImageSele
                     }
                 });
     }
-
     private void init() {
         title_text.setTextColor(imageConfig.getTitleTextColor());
         imageselector_title_bar_layout.setBackgroundColor(imageConfig.getTitleBgColor());

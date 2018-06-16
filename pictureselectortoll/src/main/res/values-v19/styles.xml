@@ -6,7 +6,7 @@
         <!--<item name="android:windowTranslucentNavigation">true</item>-->
     </style>
 
-    <style name="ImageShowTheme" parent="android:Theme.NoTitleBar.Fullscreen">
+    <style name="ImageShowTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
